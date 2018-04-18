@@ -15,17 +15,20 @@ const taskCharge = require('task.charge')
 
 module.exports.loop = function () {
     
-    // TODO: use flag to flag road and extension construction site
-    
-    const spawn = Game.spawns['Spawn1']
+    // TODO: log creep name
+    // TODO: change creep name to its assign
+    // TODO: SPECIAL assign and it's script-ed
+
+    const spawn = Game.spawns['Spawn1'] 
     init(spawn)
 
     const number_of_creeps = Object.keys(Game.creeps).length
-    const charger_capacity = functionSpawn.newCreepBodyFor(spawn).filter(body => body == CARRY).length
+    const charger_capacity = (functionSpawn.newCreepBodyFor(spawn).filter(body => body == CARRY).length) * 50
     const lack_of_energy = spawn.room.find(FIND_STRUCTURES, { filter: taskCharge.filter }).map(structure => structure.energyCapacity - structure.energy).reduce(function(x, y) { return x + y }, 0)
-    const charger_needs = Math.min(Math.floor((lack_of_energy / charger_capacity) / 3), 5)
+    const charger_needs = Math.max(Math.min(Math.floor(lack_of_energy / charger_capacity), 5), 3)
     const is_need_charge = roleCharger.isNeeded(spawn.room)
     const is_need_build = roleBuilder.isNeeded(spawn.room)
+    const number_of_max_builder = Math.floor(number_of_creeps / 4) + 1
 
     functionRoad.init(spawn.room)
     
@@ -46,24 +49,35 @@ module.exports.loop = function () {
             continue
         }
         
-        var number_of_chargers = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.CHARGE).length;
+        const number_of_chargers = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.CHARGE).length;
         if ((number_of_chargers < charger_needs) && is_need_charge) {
             creep.changeAssignTo(constants.assign.CHARGE)
             continue
         }
         
-        var number_of_upgrader = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.UPGRADE).length;
-        if ((number_of_creeps > 3) && (number_of_upgrader <= 3)) {
+        const number_of_upgrader = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.UPGRADE).length;
+        if ((number_of_creeps > 3) && (number_of_upgrader < 1)) {
             creep.changeAssignTo(constants.assign.UPGRADE)
             continue
         }
         
+        const number_of_builder = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.BUILD).length
+        if ((number_of_builder >= number_of_max_builder) && (creep.carry[RESOURCE_ENERGY] < 50)) {
+            creep.changeAssignTo(constants.assign.COLLECT)
+            continue
+        }
+
         if (is_need_build) {
             creep.changeAssignTo(constants.assign.BUILD)
             continue
         }
-        
-        creep.changeAssignTo(constants.assign.UPGRADE)
+
+        if (number_of_upgrader > 2) {
+            creep.changeAssignTo(constants.assign.COLLECT)
+        }
+        else {
+            creep.changeAssignTo(constants.assign.UPGRADE)
+        }
     }
     
     showAssignees(spawn)
@@ -75,6 +89,11 @@ module.exports.loop = function () {
         }
 
         creep.runAssignedTask()
+        
+        // if (creep.memory.assign == constants.assign.BUILD) {
+        //     creep.changeAssignTo(constants.assign.COLLECT)
+        //     creep.changeOngoingTaskTo(constants.ongoing_task.NONE)
+        // }
         
         functionRoad.recordPositionOf(creep)
         
@@ -89,10 +108,8 @@ module.exports.loop = function () {
     for (const tower of towers) {
         var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return 
-                    ((structure.structureType != STRUCTURE_WALL) && (structure.hits < structure.hitsMax)) ||
-                    ((structure.structureType == STRUCTURE_WALL) && (structure.hits < 500))
-                
+                return  (structure.structyreType != STRUCTURE_CONTAINER) &&
+                        (structure.hits < structure.hitsMax) && (structure.hits < 500)
             }
         });
         if(closestDamagedStructure) {
@@ -127,6 +144,26 @@ function init(spawn) {
         const objects = spawn.room.lookAt(x, y).filter(obj => obj.type == 'source')
 
         Memory[spawn.room.name][constants.object.SOURCE_NW] = objects[0]['source'].id
+    }
+    
+    if (Game.time % 2 == 0) {
+        const attackers = spawn.room.find(FIND_HOSTILE_CREEPS, {
+            filter: (creep) => {
+                return (creep.getActiveBodyparts(ATTACK) +  creep.getActiveBodyparts(RANGED_ATTACK)) > 0;
+            }
+        })
+        
+        if (attackers.length) {
+            util.log('DETECT ', attackers.length, ' ATTACKERS!!! owner: ', attackers[0].owner.username)
+            
+            if (spawn.room.controller.safeMode > 0) {
+                util.log('Safemode active')
+            }
+            else {
+                util.log('Activate safe mode')
+                spawn.room.controller.activateSafeMode()
+            }
+        }
     }
 }
 
@@ -170,7 +207,7 @@ function showAssignees(spawn) {
     .forEach(function(message){
         spawn.room.visual.text(
         message,
-        spawn.pos.x + 8, 
+        spawn.pos.x + 13, 
         spawn.pos.y + i, 
         {align: 'right', opacity: 0.8}
         )

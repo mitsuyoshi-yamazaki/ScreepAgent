@@ -3,6 +3,7 @@ const util = require('util')
 
 const taskHarvest = require('task.harvest')
 const taskCharge = require('task.charge')
+const taskExitRoom = require('task.exit_room')
 
 const roleHarvester = {
     isNeeded: function(room) {
@@ -11,11 +12,17 @@ const roleHarvester = {
     },
 
     run: function(creep) {
-        const x = 16
-        const y = 32
+        if ((creep.room.name != creep.memory.meta.destination_room_name)) {
+            taskExitRoom.run(creep)
+            return
+        }
         
+        
+        const x = creep.memory.meta.destination_pos.x
+        const y = creep.memory.meta.destination_pos.y
+
         if ((creep.pos.x != x) || (creep.pos.y != y)) {
-            const result = creep.moveTo(x, y)
+            const result = creep.moveTo(x, y, { reusePath: constants.system.REUSE_PATH * 2 })
             
             switch (result) {
                 case OK:
@@ -26,21 +33,22 @@ const roleHarvester = {
                     break
             
                 default:
-                    util.log('[Harvester role] moveTo error: ' + result)
+                    util.log('[Harvester role] moveTo error: ', result, creep.name)
                     break
                 }
 
             return
         }
 
-        const source_id = Memory[creep.room.name][constants.object.SOURCE_NE]
-        const source = Game.getObjectById(source_id)
+        // const source_id = Memory[creep.room.name][constants.object.SOURCE_NE]
+        // const source = Game.getObjectById(source_id)
+        const source = creep.pos.findInRange(FIND_SOURCES, 1)[0]
         
         if ((creep.carryCapacity == creep.carry.energy) || (source.energy == 0)) {
             // transfer
             
             const containers = creep.pos.findInRange(FIND_STRUCTURES, 1, {
-                filter: structure => (structure.structureType == STRUCTURE_CONTAINER) && (structure.store[RESOURCE_ENERGY] < structure.storeCapacity)
+                filter: structure => (structure.structureType == STRUCTURE_CONTAINER)// && (structure.store[RESOURCE_ENERGY] < structure.storeCapacity)
             })
             
             if (containers.length) {
@@ -49,14 +57,21 @@ const roleHarvester = {
                 switch (result) {
                 case OK:
                     break
+                
+                case ERR_FULL:
+                    util.log('[Harvester role] transfer error: ', result, creep.name)
+                    creep.room.createConstructionSite(x + 1, y, STRUCTURE_CONTAINER)
+                    const site = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
+                    creep.build(site)
+                    break
             
                 default:
-                    util.log('[Harvester role] transfer error: ' + result)
+                    util.log('[Harvester role] transfer error: ', result, creep.name)
                     break
                 }
             }
             else {
-                util.log('[Harvester role] no containers found')
+                util.log('[Harvester role] no containers found ', creep.name)
                 
                 creep.room.createConstructionSite(x + 1, y - 1, STRUCTURE_CONTAINER)
                 const site = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
@@ -73,7 +88,7 @@ const roleHarvester = {
                 break
             
             default:
-                util.log('[Harvester role] harvest error: ' + result)
+                util.log('[Harvester role] harvest error: ', result, creep.name)
                 break
             }
         }

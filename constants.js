@@ -11,8 +11,12 @@ module.exports.DEBUG        = true
 module.exports.DETAILED_LOG = false
 
 module.exports.main = {
-    NULBER_OF_CREEPS            : 16,    // TODO: 動的に決定する
+    NULBER_OF_CREEPS            : 14,    // TODO: 動的に決定する
     EMERGENCY_NULBER_OF_CREEPS  : 4
+}
+
+module.exports.system = {
+    REUSE_PATH  : 10
 }
 
 module.exports.assign = {
@@ -20,15 +24,9 @@ module.exports.assign = {
     HARVEST   : 1,
     BUILD     : 2,
     UPGRADE   : 3,
-    CHARGE    : 4
-}
-
-module.exports.assign_icon = {
-    0   : '❗️️',
-    1   : '🌿',
-    2   : '🚧',
-    3   : '⚡',
-    4   : '🔋'
+    CHARGE    : 4,
+    COLLECT   : 5,
+    RESERVE   : 6
 }
 
 module.exports.task_state = {
@@ -41,7 +39,10 @@ module.exports.ongoing_task = {
     HARVEST : 1,
     CHARGE  : 2,
     BUILD   : 3,
-    UPGRADE : 4
+    UPGRADE : 4,
+    EXIT_ROOM   : 5,
+    RETURN_ROOM : 6,
+    RESERVE     : 7
 }
 
 module.exports.task_icon = {
@@ -49,7 +50,10 @@ module.exports.task_icon = {
     1   : '🌿',
     2   : '🔋',
     3   : '🚧',
-    4   : '⚡'
+    4   : '⚡',
+    5   : '🏃',
+    6   : '🏃',
+    7   : '🎫'
 }
 
 module.exports.object = {

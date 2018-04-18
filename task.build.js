@@ -24,7 +24,7 @@ function run(creep) {
     if (creep.build(site) == ERR_NOT_IN_RANGE) {
         const result = creep.moveTo(site, {
             visualizePathStyle: {stroke: '#0000aa'},
-            reusePath: 5
+            reusePath: constants.system.REUSE_PATH
         });
         
         switch (result) {
@@ -42,7 +42,9 @@ function run(creep) {
 }
 
 function isNeeded(room) {
-    return room.find(FIND_CONSTRUCTION_SITES).length > 0
+    return room.find(FIND_CONSTRUCTION_SITES, {
+        filter: site => site.my == true
+    }).length > 0
 }
 
 function getClosestConstructionSite(creep) {

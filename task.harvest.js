@@ -45,15 +45,15 @@ function run(creep, target_source) {
     var dropped_resource = null
     
     // TODO: find closest
-    const dropped_resources = Game.spawns['Spawn1'].room.find(FIND_DROPPED_RESOURCES, {
-        filter: resource => (resource.resourceType == RESOURCE_ENERGY) && (resource.amount > 100)
+    const dropped_resources = creep.room.find(FIND_DROPPED_RESOURCES, {
+        filter: resource => (resource.resourceType == RESOURCE_ENERGY) && (resource.amount > 20)
     })
     if (dropped_resources.length) {
         dropped_resource = dropped_resources[0]
     }
     else {
         const containers = creep.room.find(FIND_STRUCTURES, {
-            filter: structure => (structure.structureType == STRUCTURE_CONTAINER) && (structure.store[RESOURCE_ENERGY] > lack_of_energy)
+            filter: structure => (structure.structureType == STRUCTURE_CONTAINER) && (structure.store[RESOURCE_ENERGY] > 50)
         })
         if (containers.length) {
             container = containers[0]
@@ -74,26 +74,32 @@ function run(creep, target_source) {
     
     if (dropped_resource && (creep.pickup(dropped_resource) == ERR_NOT_IN_RANGE)) {
         move(creep, dropped_resource)
+            return constants.task_state.IN_PROGRESS
     }
     if (container && (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)) {
-        move(creep, container)
+        const r = move(creep, container)
+        console.log('[Harvest error] move to containr ', r, creep.name)
+            return constants.task_state.IN_PROGRESS
     }
     if (source && (creep.harvest(source) == ERR_NOT_IN_RANGE)) {
         move(creep, source)
+            return constants.task_state.IN_PROGRESS
     }
  
-    return constants.task_state.IN_PROGRESS
+     return constants.task_state.IN_PROGRESS
+
 }
 
 function move(creep, pos) {
     const result = creep.moveTo(pos, {
         visualizePathStyle: {stroke: '#00aa00'},
-        reusePath: 5
+        reusePath: constants.system.REUSE_PATH
     });
     
     switch (result) {
     case OK:
     case ERR_TIRED:
+    case ERR_NO_PATH:
         break
         
     default:

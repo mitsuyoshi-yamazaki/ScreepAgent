@@ -3,7 +3,7 @@
  * module.exports.thing = 'a thing';
  *
  * You can import it from another modules like this:
- * var mod = require('task.upgrade');
+ * var mod = require('task.return_room');
  * mod.thing == 'a thing'; // true
  */
 
@@ -11,15 +11,16 @@ const constants = require('constants');
 const util = require('util');
 
 function run(creep) {
-    if (creep.carry.energy <= 0) {
-        return constants.task_state.DONE
-    }
+        const first_room_name =  'E8S51'
 
-    const target = creep.room.controller
-    
-    if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
-        const result = creep.moveTo(target, {
-            visualizePathStyle: {stroke: '#cc0000'},
+        if ((creep.room.name == first_room_name) && (creep.pos.x > 3)) {
+            return constants.task_state.DONE
+        }     
+        
+        const spawn = Game.spawns['Spawn1']
+        
+        const result = creep.moveTo(spawn, {
+            visualizePathStyle: {stroke: '#cccccc'},
             reusePath: constants.system.REUSE_PATH
         });
         
@@ -29,17 +30,11 @@ function run(creep) {
             break
         
         default:
-            util.log('[Upgrade task] moveTo error: ' + result)
+            util.log('[Return room task] moveTo error: ' + result)
             break
         }
-    }
-    
-    return constants.task_state.IN_PROGRESS
-}
-
-function isNeeded(room) {
-    return true
+        
+        return constants.task_state.IN_PROGRESS
 }
 
 module.exports.run = run
-module.exports.isNeeded = isNeeded

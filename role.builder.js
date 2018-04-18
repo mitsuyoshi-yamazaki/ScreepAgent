@@ -31,8 +31,10 @@ var roleBuilder = {
         
         if (creep.memory.ongoing_task == constants.ongoing_task.HARVEST) {
             
-            const source_id = Memory[creep.room.name][constants.object.SOURCE_NW]
-            const source = Game.getObjectById(source_id)
+            // const room_name = Game.spawns['Spawn1'].room.name
+            // const source_id = Memory[room_name][constants.object.SOURCE_NW]
+            // const source = Game.getObjectById(source_id)
+            const source = null
 
     	    if (taskHarvest.run(creep, source) == constants.task_state.IN_PROGRESS) {
 	            return

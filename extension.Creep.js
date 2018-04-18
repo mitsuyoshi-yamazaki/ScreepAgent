@@ -14,6 +14,8 @@ const roleHarvester = require('role.harvester')
 const roleCharger = require('role.charger')
 const roleUpgrader = require('role.upgrader')
 const roleBuilder = require('role.builder')
+const roleCollector = require('role.collector')
+const roleReserver = require('role.reserver')
 
 Creep.prototype.changeAssignTo = function(assign) {
     if (this.memory.assign == assign) {
@@ -21,12 +23,8 @@ Creep.prototype.changeAssignTo = function(assign) {
         return
     }
     
+    this.changeOngoingTaskTo(constants.ongoing_task.NONE)
     this.memory.assign = assign
-    // if (assign != constants.assign.NONE) {
-    //     this.say(constants.assign_icon[assign])
-    // }
-    
-    // console.log('change to ', constants.assign_icon[assign])
 }
 
 Creep.prototype.changeOngoingTaskTo = function(task) {
@@ -57,6 +55,14 @@ Creep.prototype.runAssignedTask = function() {
 
     case constants.assign.CHARGE:
         roleCharger.run(this)
+        break
+
+    case constants.assign.COLLECT:
+        roleCollector.run(this)
+        break
+
+    case constants.assign.RESERVE:
+        roleReserver.run(this)
         break
 
     case constants.assign.NONE:
