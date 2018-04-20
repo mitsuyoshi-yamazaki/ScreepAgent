@@ -23,9 +23,9 @@ function run(creep) {
     }
     
     if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-        const result = creep.moveTo(target, {
+        const result = creep.moveWith(target, {
             visualizePathStyle: {stroke: '#aaaa00'},
-            reusePath: constants.system.REUSE_PATH
+            disable_road_repair: true
         });
         
         switch (result) {

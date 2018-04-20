@@ -6,6 +6,14 @@ const taskCharge = require('task.charge')
 const taskExitRoom = require('task.exit_room')
 
 const roleHarvester = {
+    _run: function(creep) {
+        // goto destination
+        // if arrived: record tick to 
+        // if no container: construct
+        
+        
+    },
+    
     isNeeded: function(room) {
         const number_of_harvesters = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.HARVEST).length;
         return number_of_harvesters < 1
@@ -26,10 +34,10 @@ const roleHarvester = {
             
             switch (result) {
                 case OK:
+                case ERR_TIRED:
                     break
                     
                 case ERR_NO_PATH:
-                    
                     break
             
                 default:

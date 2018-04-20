@@ -8,6 +8,7 @@
  */
 
 var constants = require('constants');
+const util = require('util')
 
 const first_room_name =  'E8S51'
 const left_room_name = 'E7S51'
@@ -46,58 +47,99 @@ function shouldSpawn(spawn) {
 function spawnCreep(spawn) {
     const now = Game.time
     const new_name = 'Creep' + now;
-    var body = newCreepBodyFor(spawn)
+    var body = null
     var assign = constants.assign.NONE
     var destination_room_name = null
     var meta = {}
 
-    const available_energy = spawn.room.energyCapacityAvailable
+    var available_energy = spawn.room.energyAvailable
+
+
+    const number_of_creeps = Object.keys(Game.creeps).length
 
     const harvesters = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.HARVEST)
-    if (harvesters.length < 2) {
+    if ((number_of_creeps > 8) && (harvesters.length < 1)) {
         body = [MOVE, CARRY, CARRY]
         
         const energy = available_energy - 150
         
-        const number_of_works = Math.max(Math.floor((energy) / 100), 6) // 6WORK, 2CARRY -> 100/9tick + 1tick -> 3000/300tick
+        const number_of_works = Math.min(Math.floor((energy) / 100), 6) // 6WORK, 2CARRY -> 100/9tick + 1tick -> 3000/300tick
         const works = Array.from(Array(number_of_works).keys()).map(_ => WORK)
         body = body.concat(works)
         
-        const number_of_moves = Math.max(((energy - (number_of_works * 100)) / 50), 2)
-        const moves = Array.from(Array(number_of_moves).keys()).map(_ => WORK)
+        const number_of_moves = Math.min(Math.floor((energy - (number_of_works * 100)) / 50), 2)
+        const moves = Array.from(Array(number_of_moves).keys()).map(_ => MOVE)
         body = body.concat(moves)
 
         assign = constants.assign.HARVEST
         
-        if ((harvesters.length == 1) && (harvesters[0].memory.meta.destination_room_name == first_room_name)) {
-            meta = {
-                destination_room_name: left_room_name,
-                destination_pos: { x: 39, y: 28 }
-            }
-        }
-        else {
+        // if ((harvesters.length == 1) && (harvesters[0].memory.meta.destination_room_name == first_room_name)) {
+        //     meta = {
+        //         destination_room_name: left_room_name,
+        //         destination_pos: { x: 39, y: 28 }
+        //     }
+        // }
+        // else {
             meta = {
                 destination_room_name: first_room_name,
                 destination_pos: { x: 16, y: 32 }
             }
-        }
+        // }
         
     }
     else if (available_energy > 700) {
-        const number_of_reservers = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.RESERVE).length;
-        if (number_of_reservers < 1) {
-            body = [CLAIM]
+        const reservers = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.RESERVE);
+        if ((number_of_creeps > 8) && (reservers.length < 2)) {
+            body = [CLAIM]  // TODO: Double CLAIM body parts 
             
-            const number_of_moves = Math.floor((available_energy - 600) / 50)
+            const number_of_moves = Math.min(Math.floor((available_energy - 600) / 50), 2)
             const moves = Array.from(Array(number_of_moves).keys()).map(_ => MOVE)
             
             body = body.concat(moves)
             assign = constants.assign.RESERVE
-            destination_room_name = 'E7S51'
+            
+            const room_names = ['E7S51', 'E9S51']
+            const reserving_room_names = reservers.map(reserver => reserver.memory.destination_room_name)
+            
+            destination_room_name = room_names[0]   // For if destination_room_name couldn't be determined
+            
+            for (const target_room_name of room_names) {
+                if (reserving_room_names.includes(target_room_name) == false) {
+                    destination_room_name = target_room_name
+                    break
+                }
+            }
         }
     }
+    
+    if ((body == null) && (number_of_creeps > 10)) {
+        const carrier = _.filter(Game.creeps, (creep) => creep.memory.assign == constants.assign.CARRIER)
+        if (carrier.length == 0) {
+            body = []
+            
+            const energy_unit = 200
+            const body_unit = [CARRY, CARRY, MOVE]
 
-    return spawn.spawnCreep(body, new_name, 
+            while (available_energy >= energy_unit) {
+                body = body.concat(body_unit)
+                available_energy = available_energy - energy_unit
+            }
+            
+            assign = constants.assign.CARRIER
+            // meta = {
+            //     source: {
+            //         room_name: 'E8S51',
+                    
+            //     }
+            // }
+        }
+    }
+    
+    if (body == null) {
+        body = newCreepBodyFor(spawn)
+    }
+    
+    const result = spawn.spawnCreep(body, new_name, 
             {
                 memory: {
                     assign: assign,
@@ -108,6 +150,13 @@ function spawnCreep(spawn) {
                     meta: meta
                 }
             });
+            
+    if (result == OK) {
+        util.log('[Spawn] spawn creep with body ', body)
+        // util.log('enrgy: ', available_energy, ' number of creeps ', number_of_creeps, ' number of reservers ', reservers.length)
+    }        
+    
+    return result
 }
 
 function cleanupMemory() {
@@ -123,37 +172,4 @@ module.exports.shouldSpawn = shouldSpawn
 module.exports.spawnCreep = spawnCreep
 module.exports.cleanupMemory = cleanupMemory
 module.exports.newCreepBodyFor = newCreepBodyFor
-
-
-function _newCreepBodyFor(spawn) {
-    if (Object.keys(Game.creeps).length < 4) {
-        return [WORK, CARRY, MOVE]
-    }
-    
-    var energy_map = {
-        WORK: 100,
-        CARRY: 50,
-        MOVE: 50
-    }
-    // var available_energy = spawn.room.energyCapacityAvailable
-    var available_energy = spawn.room.energyAvailable
-    
-    // var number_of_works = Math.floor((available_energy * 0.5) / energy_map['WORK'])
-    var number_of_works = Math.floor((available_energy * 0.4) / energy_map['WORK'])
-    var energy_left = available_energy - (number_of_works * energy_map['WORK'])
-    var number_of_carry = Math.floor((energy_left / 2) / energy_map['CARRY'])
-    
-    var body = []
-    
-    var works = Array.from(Array(number_of_works).keys()).map(_ => WORK)
-    body = body.concat(works)
-    
-    var carries = Array.from(Array(number_of_carry).keys()).map(_ => CARRY)
-    body = body.concat(carries)
-
-    var moves = Array.from(Array(number_of_carry).keys()).map(_ => MOVE)
-    body = body.concat(moves)
-    
-    return body
-}
 

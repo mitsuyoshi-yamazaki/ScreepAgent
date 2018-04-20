@@ -15,12 +15,14 @@ function run(creep) {
         return constants.task_state.DONE
     }
 
-    const target = creep.room.controller
     
-    if (creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
-        const result = creep.moveTo(target, {
+
+    const target = creep.room.controller
+    const r = creep.upgradeController(target)
+    
+    if (r == ERR_NOT_IN_RANGE) {
+        const result = creep.moveWith(target, {
             visualizePathStyle: {stroke: '#cc0000'},
-            reusePath: constants.system.REUSE_PATH
         });
         
         switch (result) {
@@ -32,6 +34,12 @@ function run(creep) {
             util.log('[Upgrade task] moveTo error: ' + result)
             break
         }
+    }
+    else if (r == OK) {
+        
+    }
+    else {
+        util.log('[Upgrade task]', creep.id, ' upgradeController error: ', r)
     }
     
     return constants.task_state.IN_PROGRESS

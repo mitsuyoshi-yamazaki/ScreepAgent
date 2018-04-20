@@ -19,9 +19,8 @@ function run(creep) {
         
         const spawn = Game.spawns['Spawn1']
         
-        const result = creep.moveTo(spawn, {
+        const result = creep.moveWith(spawn, {
             visualizePathStyle: {stroke: '#cccccc'},
-            reusePath: constants.system.REUSE_PATH
         });
         
         switch (result) {
@@ -30,7 +29,7 @@ function run(creep) {
             break
         
         default:
-            util.log('[Return room task] moveTo error: ' + result)
+            util.detailed_log('[Return room task] moveTo error: ' + result)
             break
         }
         

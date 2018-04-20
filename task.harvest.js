@@ -28,6 +28,7 @@ function run(creep, target_source) {
         
         switch (result) {
         case OK:
+        case ERR_NOT_ENOUGH_RESOURCES:
             return constants.task_state.IN_PROGRESS
             
         case ERR_NOT_IN_RANGE:
@@ -35,7 +36,7 @@ function run(creep, target_source) {
             return constants.task_state.IN_PROGRESS
             
         default:
-            util.log('[Harvest task] given target ' + action_type + ' error: ' + result)
+            util.log('[Harvest task] given target ' + action_type + ' error: ' + result + ' target: ' + target_source + ' id: ' + target_source.id + Object.keys(target_source))
             break
         }
     }
@@ -62,6 +63,7 @@ function run(creep, target_source) {
             // target = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
             const sources = creep.room.find(FIND_SOURCES_ACTIVE)
             source = sources[creep.memory.birth_time % sources.length]
+            
         }
     }
     
@@ -74,16 +76,16 @@ function run(creep, target_source) {
     
     if (dropped_resource && (creep.pickup(dropped_resource) == ERR_NOT_IN_RANGE)) {
         move(creep, dropped_resource)
-            return constants.task_state.IN_PROGRESS
+        return constants.task_state.IN_PROGRESS
     }
     if (container && (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)) {
         const r = move(creep, container)
-        console.log('[Harvest error] move to containr ', r, creep.name)
-            return constants.task_state.IN_PROGRESS
+        // util.log('[Harvest error] move to containr ', r, creep.name)
+        return constants.task_state.IN_PROGRESS
     }
     if (source && (creep.harvest(source) == ERR_NOT_IN_RANGE)) {
         move(creep, source)
-            return constants.task_state.IN_PROGRESS
+        return constants.task_state.IN_PROGRESS
     }
  
      return constants.task_state.IN_PROGRESS
@@ -106,6 +108,8 @@ function move(creep, pos) {
         util.log('[Harvest task] moveTo error: ' + result)
         break
     }
+    
+    return result
 }
 
 module.exports.run = run

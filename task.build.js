@@ -22,7 +22,7 @@ function run(creep) {
     }
     
     if (creep.build(site) == ERR_NOT_IN_RANGE) {
-        const result = creep.moveTo(site, {
+        const result = creep.moveWith(site, {
             visualizePathStyle: {stroke: '#0000aa'},
             reusePath: constants.system.REUSE_PATH
         });
@@ -50,15 +50,23 @@ function isNeeded(room) {
 function getClosestConstructionSite(creep) {
     var site = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, {
         filter: (site) => 
-            (site.structureType == STRUCTURE_TOWER) ||
-            (site.structureType == STRUCTURE_EXTENSION)
+            (site.my == true) &&
+            (
+                (site.structureType == STRUCTURE_TOWER) ||
+                (site.structureType == STRUCTURE_EXTENSION)
+            )
     })
     
     if (site) {
+        if (creep.room.name == 'E6S51') {
+            // console.log('SITE: ', site.id)
+        }
         return site
     }
     
-    return creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
+    return creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, {
+        filter: (site) => site.my == true
+    })
 }
 
 module.exports.run = run

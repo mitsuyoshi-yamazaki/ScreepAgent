@@ -3,6 +3,9 @@ const util = require('util')
 
 const taskHarvest = require('task.harvest')
 const taskUpgrade = require('task.upgrade')
+const taskReturnRoom = require('task.return_room')
+
+const first_room_name =  'E8S51'
 
 var roleUpgrader = {
     isNeeded: function(room) {
@@ -24,13 +27,19 @@ var roleUpgrader = {
             const x = 17
             const y = 31
             const containers = creep.room.lookAt(x, y).filter(obj => (obj.type == 'structure') && (obj['structure'].structureType = STRUCTURE_CONTAINER))
+            const target = containers.length ? containers[0].structure : null
 
-    	    if (taskHarvest.run(creep, containers[0]) == constants.task_state.IN_PROGRESS) {
+    	    if (taskHarvest.run(creep, target) == constants.task_state.IN_PROGRESS) {
 	            return
 	        }
 	        creep.changeOngoingTaskTo(constants.ongoing_task.UPGRADE)
         }
         if (creep.memory.ongoing_task == constants.ongoing_task.UPGRADE) {
+            if (creep.room.controller.my == false) {
+                taskReturnRoom.run(creep)
+                return
+            }
+            
     	    if (taskUpgrade.run(creep) == constants.task_state.IN_PROGRESS) {
 	            return
 	        }
