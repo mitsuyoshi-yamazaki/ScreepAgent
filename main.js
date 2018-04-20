@@ -17,8 +17,6 @@ const taskCharge = require('task.charge')
 // generic creep body
 
 function runSecondSpawn() {
-    console.log('GitHub sync test')
-
     const spawn = Game.spawns['Spawn2']
     
     const creeps = spawn.pos.findInRange(FIND_CREEPS, 1, {

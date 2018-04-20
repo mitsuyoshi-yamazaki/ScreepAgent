@@ -11,7 +11,7 @@ const constants = require('constants');
 const util = require('util');
 
 function run(creep, target_source) {
-    const lack_of_energy = creep.carryCapacity - creep.carry.energy
+    const lack_of_energy = creep.carryCapacity - creep.carry[RESOURCE_ENERGY]
     
     if (lack_of_energy == 0) {
         return constants.task_state.DONE

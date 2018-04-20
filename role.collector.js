@@ -50,15 +50,19 @@ const roleCollector = {
         
         if (creep.memory.ongoing_task == constants.ongoing_task.EXIT_ROOM) {
 
-        // const destination_room_name = ['E6S51', 'E7S51', 'E9S51', 'E7S51', 'E9S51'][creep.memory.birth_time % 5]
-            const creeps_in_second_room = _.filter(Game.creeps, (creep) => creep.room.name == left_left_room_name)
-            var rooms = ['E6S51', 'E7S51', 'E9S51']
+            var destination_room_name = creep.memory.meta.collector_destination_room_name
             
-            if (creeps_in_second_room.length > 7) {
-                rooms = ['E7S51', 'E9S51']
-            }
+            if (!destination_room_name) {
+                const creeps_in_second_room = _.filter(Game.creeps, (creep) => creep.room.name == left_left_room_name)
+                var rooms = ['E6S51', 'E7S51', 'E9S51']
+            
+                if (creeps_in_second_room.length > 7) {
+                    rooms = ['E7S51', 'E9S51']
+                }
         
-            const destination_room_name = rooms[creep.memory.birth_time % rooms.length]
+                destination_room_name = rooms[creep.memory.birth_time % rooms.length]
+                creep.memory.meta.collector_destination_room_name = destination_room_name
+            }
             const is_arrived = creep.room.name == destination_room_name
 
             if (!is_arrived) {// || (is_arrived && ((creep.pos.x < 3) || (creep.pos.x > 47)))) {
@@ -118,7 +122,7 @@ const roleCollector = {
 	        else if (taskBuild.isNeeded(creep.room)) {
 	            creep.changeOngoingTaskTo(constants.ongoing_task.BUILD)
 	        }
-	        else if (creep.room.controller.my == true) {
+	        else if ((creep.room.name != first_room_name) && (creep.room.controller.my == true)) {
 	            creep.changeOngoingTaskTo(constants.ongoing_task.UPGRADE)
 	        }
 	        else {
