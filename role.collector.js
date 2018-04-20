@@ -158,7 +158,7 @@ const roleCollector = {
     	    if (taskReturnRoom.run(creep) == constants.task_state.IN_PROGRESS) {
 	            return
 	        }
-	        creep.changeOngoingTaskTo(constants.ongoing_task.HARVEST)
+	        creep.changeAssignTo(constants.assign.NONE)
         }
         
         
