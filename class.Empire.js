@@ -1,7 +1,10 @@
 const constants = require('constants')
 const util = require('util')
 
-const Empire = function() {
+require('extension.Spawn')
+
+const Empire = function(name) {
+    this.name = name
 }
 
 /// Initialization
@@ -11,11 +14,18 @@ const Empire = function() {
  */
 Empire.prototype.initialize = function() {
     this.spawns = Game.spawns
+
+    for (const spawn_name in this.spawns) {
+        const spawn = this.spawns[spawn_name]
+
+        spawn.initialize()
+    }
 }
 
 /// Actions
 Empire.prototype.say = function(message) {
-    for (const spawn of this.spawns) {
+    for (const spawn_name in this.spawns) {
+        const spawn = this.spawns[spawn_name]
         spawn.say(message)
     }
 }

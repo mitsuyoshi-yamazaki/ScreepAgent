@@ -37,16 +37,17 @@ StructureSpawn.prototype.spawnHarvester = function(source_id, room_name) {
 }
 
 /// Initialization
-StructureSpawn.prototype.initialize = function() {
+StructureSpawn.prototype.initialize = function(a) {
     this.squads = []    // @todo: assign values
-    this.rooms = Game.rooms // @todo: assign values
-    this.creeps = []    // @todo: assign values
+    this.rooms = Game.rooms // @todo: filter rooms
+    this.creeps = Game.creeps    // @todo: filter creeps
 }
 
 /// Actions
 StructureSpawn.prototype.say = function(message) {
-    for (const spawn of this.spawns) {
-        spawn.say(message)
+    for (const creep_name in this.creeps) {
+        const creep = this.creeps[creep_name]
+        creep.say(message)
     }
 }
 
