@@ -1,6 +1,12 @@
 const constants = require('constants')
 const util = require('util')
 
+const World = require('World')
+
 module.exports.loop = function () {
-    util.log('Game.apr20_test: ', Game.apr20_test)
+    console.log('fuga')
+    Game.world = new World()
+    console.log(Game.world)
+    
+    // Game.world.expand()
 }
