@@ -10,6 +10,7 @@
 const constants = require('constants')
 const util = require('util')
 
+/// Functions
 StructureSpawn.prototype.spawnHarvester = function(source_id, room_name) {
     const now = Game.time
     const new_name = 'Creep' + now;
@@ -33,6 +34,20 @@ StructureSpawn.prototype.spawnHarvester = function(source_id, room_name) {
                     meta: meta,
                 }
             })
+}
+
+/// Initialization
+StructureSpawn.prototype.initialize = function() {
+    this.squads = []    // @todo: assign values
+    this.rooms = Game.rooms // @todo: assign values
+    this.creeps = []    // @todo: assign values
+}
+
+/// Actions
+StructureSpawn.prototype.say = function(message) {
+    for (const spawn of this.spawns) {
+        spawn.say(message)
+    }
 }
 
 module.exports = {}

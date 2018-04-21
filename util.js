@@ -27,6 +27,16 @@ var detailed_say = function(obj, message) {
     }
 }
 
+Object.prototype.values = function() {
+    var values = []
+    for (const key in this) {
+        if(this.hasOwnProperty(key)){
+            values.push(this[key])
+        }
+    }
+    return values
+}
+
 module.exports.log = log
 module.exports.detailed_log = detailed_log
 module.exports.detailed_say = detailed_say
